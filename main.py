@@ -53,6 +53,9 @@ def calculate_variation(oldest, old, new):
     return (x + y) / 2
 
 
+# Calculates the mean glucose blood level value with the last 30 readings
+# TODO get the 30 values, account for errors
+def mean_glucose_level(values):
     return np.mean(values)
 
 
