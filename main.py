@@ -1,8 +1,13 @@
 # coding=utf-8
+import numpy as np
+
 __author__ = 'ei09044@fe.up.pt'
 
 
+# Variables
 parsed_sensor_data = []
+max_glucose = 6.0
+min_glucose = 3.9
 
 
 # Reads and parses the input file with the sensor data
@@ -38,6 +43,17 @@ def calculate_insulin_dosage(g, dg, ddg, ic):
 def calculate_insulin_level(d, last_ic):
     ic = d + 0.9 * last_ic
     return ic
+
+
+# Returns the variation using the last 3 readings
+def calculate_variation(oldest, old, new):
+    x = old - oldest
+    y = new - old
+
+    return (x + y) / 2
+
+
+    return np.mean(values)
 
 
 def main(args):
