@@ -5,9 +5,11 @@ __author__ = 'ei09044@fe.up.pt'
 
 
 # Variables
+sensor_data = []
 parsed_sensor_data = []
 max_glucose = 6.0
 min_glucose = 3.9
+glucose_rising = False
 
 
 # Reads and parses the input file with the sensor data
@@ -15,14 +17,14 @@ min_glucose = 3.9
 def read_sensor_input(filename):
     with open(filename) as fileobject:
         for line in fileobject:
-            parsed_sensor_data.append([float(n) for n in line.strip().split(' ', 2)])
+            sensor_data.append([float(n) for n in line.strip().split(' ', 2)])
         for pair in parsed_sensor_data:
             try:
                 x, y = pair[0], pair[1]
                 # TODO: check if x, y are valid? irrelevant because of previous check? do something else here?
             except IndexError:
                 print("A line is missing entries.")
-        print(parsed_sensor_data)  # debug parser
+        print(sensor_data)
 
 
 # Converts the sensor data to readable mmol/l values, used to measure blood glucose levels
@@ -46,17 +48,39 @@ def calculate_insulin_level(d, last_ic):
 
 
 # Returns the variation using the last 3 readings
-def calculate_variation(oldest, old, new):
+def calculate_variation(values):
+    oldest = values[values.lenght-3]
+    old = values[values.lenght-2]
+    new = values[values.lenght-1]
+
     x = old - oldest
     y = new - old
-
     return (x + y) / 2
+
+
+# Returns the variation of the variation of glucose blood levels using the last 3 values of dg
+def calculate_variation_of_variation(values):
+    oldest = values[values.lenght-3]
+    old = values[values.lenght-2]
+    new = values[values.lenght-1]
+
+    x = old - oldest
+    y = new - old
+    return (y - x) / 2
 
 
 # Calculates the mean glucose blood level value with the last 30 readings
 # TODO get the 30 values, account for errors
-def mean_glucose_level(values):
+def get_glucose_level(values):
     return np.mean(values)
+
+
+# Insulin should only be administered if the glucose blood levels are above the maximum and tending to rise
+def decide_insulin_injection(values):
+    if get_glucose_level(values) > max_glucose and glucose_rising:
+        return True
+    else:
+        return False
 
 
 def main(args):
