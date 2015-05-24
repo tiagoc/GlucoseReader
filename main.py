@@ -54,87 +54,64 @@ def parse_and_decide(filename):
                 fail_a = False
                 fail_b = False
 
-                # Check input errors
+                # Checks input errors
                 if validate_input(x) and validate_input(y):
-                    if x < 1 or x > 5:
-                        fails += 1
-                        fail_a = True
-                        print("S1_OUT_OF_RANGE")
-                    if y < 1 or y > 5:
-                        fails += 1
-                        fail_b = True
-                        print("S2_OUT_OF_RANGE")
-                    if x == last_input_a:
-                        fails += 1
-                        fail_a = True
-                        print("S1_STUCKAT")
-                    if y == last_input_b:
-                        fails += 1
-                        fail_b = True
-                        print("S2_STUCKAT")
-                    if abs(float(x) - float(last_good_value_a) > float(max_variation)) and last_input_a != 0.0:
-                        fails += 1
-                        fail_a = True
-                        print("S1_RANDOMVALUES")
-                    if abs(float(y) - float(last_good_value_b) > float(max_variation)) and last_input_b != 0.0:
-                        fails += 1
-                        fail_b = True
-                        print("S2_RANDOMVALUES")
-                    if not fail_a and not fail_b:
-                        parsed_sensor_data.append(statistics.mean([x, y]))
-                        last_input_a = x
-                        last_input_b = y
-                        last_good_value_a = last_input_a
-                        last_good_value_b = last_input_b
-                elif validate_input(x) and not (validate_input(y)):
-                    if float(x) < 1 or float(x) > 5:
-                        fails += 1
-                        fail_a = True
-                        print("S1_OUT_OF_RANGE")
-                    if x == last_input_a:
-                        fails += 1
-                        fail_a = True
-                        print("S1_STUCKAT")
-                    if abs(float(x) - float(last_good_value_a) > float(max_variation)) and last_input_a != 0.0:
-                        fails += 1
-                        fail_a = True
-                        print("S1_RANDOMVALUES")
-                    if not fail_a:
-                        fails += 1
-                        print("S2_FAILURE")
-                        parsed_sensor_data.append(float(x))
-                        last_input_a = x
-                        # last_input_b = y
-                        last_good_value_a = last_input_a
-                        last_good_value_b = last_input_b
-                elif validate_input(y) and not (validate_input(x)):
-                    if float(y) < 1 or float(y) > 5:
-                        fails += 1
-                        fail_b = True
-                        print("S2_OUT_OF_RANGE")
-                    if y == last_input_b:
-                        fails += 1
-                        fail_b = True
-                        print("S2_STUCKAT")
-                    if abs(float(y) - float(last_good_value_b) > float(max_variation)) and last_input_b != 0.0:
-                        fails += 1
-                        fail_b = True
-                        print("S2_RANDOMVALUES")
-                    if not fail_b:
-                        fails += 1
-                        print("S1_FAILURE")
-                        parsed_sensor_data.append(float(y))
-                        # last_input_a = x
-                        last_good_value_a = last_input_a
-                        last_good_value_b = last_input_b
-                        last_input_b = y
+                    fail_a = False
+                    fail_b = False
+                elif validate_input(x) and not validate_input(y):
+                    fail_a = False
+                    fail_b = True
+                    print("S2_FAILURE")
+                elif not validate_input(x) and validate_input(y):
+                    fail_a = True
+                    fail_b = False
+                    print("S1_FAILURE")
 
+                if x < 1 or x > 5:
+                    fail_a = True
+                    print("S1_OUT_OF_RANGE")
+                if y < 1 or y > 5:
+                    fail_b = True
+                    print("S2_OUT_OF_RANGE")
+                if x == last_input_a:
+                    fail_a = True
+                    print("S1_STUCKAT")
+                if y == last_input_b:
+                    fail_b = True
+                    print("S2_STUCKAT")
+                if abs(float(x) - float(last_good_value_a) > float(max_variation)) and last_input_a != 0.0:
+                    fail_a = True
+                    print("S1_RANDOMVALUES")
+                if abs(float(y) - float(last_good_value_b) > float(max_variation)) and last_input_b != 0.0:
+                    fail_b = True
+                    print("S2_RANDOMVALUES")
+
+                if not fail_a and not fail_b:
+                    parsed_sensor_data.append(statistics.mean([x, y]))
+                    last_input_a = x
+                    last_input_b = y
+                    last_good_value_a = last_input_a
+                    last_good_value_b = last_input_b
+
+                if not fail_a and fail_b:
+                    print("S2_FAILURE")
+                    parsed_sensor_data.append(float(x))
+                    last_input_a = x
+                    # last_input_b = y
+                    last_good_value_a = last_input_a
+                    last_good_value_b = last_input_b
+
+                if not fail_b and fail_a:
+                    print("S1_FAILURE")
+                    parsed_sensor_data.append(float(y))
+                    # last_input_a = x
+                    last_good_value_a = last_input_a
+                    last_good_value_b = last_input_b
+                    last_input_b = y
+
+                if fail_a and fail_b:
+                    fails += 1
                 # -----------------------------------------------------
-
-                # print(parsed_sensor_data)
-
-                if len(parsed_sensor_data) >= 3 and len(parsed_sensor_data) % 3 == 0:
-                    print("Leitura!")
 
                 if len(parsed_sensor_data) < 3:
                     print("WAIT")
@@ -149,15 +126,16 @@ def parse_and_decide(filename):
                     glucose_variation.append(calculate_variation(parsed_sensor_data[-30:]))
                     decisions.append(decide_insulin_injection(convert_sensor_data_to_mmoll(statistics.mean(parsed_sensor_data[-30:]))))
                     print(decide_insulin_injection(convert_sensor_data_to_mmoll(statistics.mean(parsed_sensor_data[-30:]))))
-                    # print(glucose_blood_levels)
-                    print(decisions)
 
             # Debugging prints:
             # print(sensor_data)
             # print(parsed_sensor_data)
-            # print(glucose_blood_levels)
+            print(glucose_blood_levels)
+            print(decisions)
+            # print(fails)
         else:
             print("FAIL")
+            decisions.append("FAIL")
 
         with open("decisions.txt", 'w') as file:
             for item in decisions:

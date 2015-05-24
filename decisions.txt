@@ -7,9 +7,12 @@ WAIT
 WAIT
 WAIT
 WAIT
-WAIT
-WAIT
-WAIT
+0
+0
+0
+0
+0
+0
 0
 0
 0
