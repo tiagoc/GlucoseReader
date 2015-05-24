@@ -51,35 +51,36 @@ def parse_and_decide(filename):
                 # print(x)
                 # print(y)
 
-                fail = False
+                fail_a = False
+                fail_b = False
 
                 # Check input errors
                 if validate_input(x) and validate_input(y):
                     if x < 1 or x > 5:
                         fails += 1
-                        fail = True
+                        fail_a = True
                         print("S1_OUT_OF_RANGE")
                     if y < 1 or y > 5:
                         fails += 1
-                        fail = True
+                        fail_b = True
                         print("S2_OUT_OF_RANGE")
                     if x == last_input_a:
                         fails += 1
-                        fail = True
+                        fail_a = True
                         print("S1_STUCKAT")
                     if y == last_input_b:
                         fails += 1
-                        fail = True
+                        fail_b = True
                         print("S2_STUCKAT")
                     if abs(float(x) - float(last_good_value_a) > float(max_variation)) and last_input_a != 0.0:
                         fails += 1
-                        fail = True
+                        fail_a = True
                         print("S1_RANDOMVALUES")
                     if abs(float(y) - float(last_good_value_b) > float(max_variation)) and last_input_b != 0.0:
                         fails += 1
-                        fail = True
+                        fail_b = True
                         print("S2_RANDOMVALUES")
-                    if not fail:
+                    if not fail_a and not fail_b:
                         parsed_sensor_data.append(statistics.mean([x, y]))
                         last_input_a = x
                         last_input_b = y
@@ -88,17 +89,17 @@ def parse_and_decide(filename):
                 elif validate_input(x) and not (validate_input(y)):
                     if float(x) < 1 or float(x) > 5:
                         fails += 1
-                        fail = True
+                        fail_a = True
                         print("S1_OUT_OF_RANGE")
                     if x == last_input_a:
                         fails += 1
-                        fail = True
+                        fail_a = True
                         print("S1_STUCKAT")
                     if abs(float(x) - float(last_good_value_a) > float(max_variation)) and last_input_a != 0.0:
                         fails += 1
-                        fail = True
+                        fail_a = True
                         print("S1_RANDOMVALUES")
-                    if not fail:
+                    if not fail_a:
                         fails += 1
                         print("S2_FAILURE")
                         parsed_sensor_data.append(float(x))
@@ -109,17 +110,17 @@ def parse_and_decide(filename):
                 elif validate_input(y) and not (validate_input(x)):
                     if float(y) < 1 or float(y) > 5:
                         fails += 1
-                        fail = True
+                        fail_b = True
                         print("S2_OUT_OF_RANGE")
                     if y == last_input_b:
                         fails += 1
-                        fail = True
+                        fail_b = True
                         print("S2_STUCKAT")
                     if abs(float(y) - float(last_good_value_b) > float(max_variation)) and last_input_b != 0.0:
                         fails += 1
-                        fail = True
+                        fail_b = True
                         print("S2_RANDOMVALUES")
-                    if not fail:
+                    if not fail_b:
                         fails += 1
                         print("S1_FAILURE")
                         parsed_sensor_data.append(float(y))
@@ -130,16 +131,37 @@ def parse_and_decide(filename):
 
                 # -----------------------------------------------------
 
-                if len(parsed_sensor_data) >= 30:
-                    glucose_blood_levels.append(convert_sensor_data_to_mmoll(statistics.mean(parsed_sensor_data[-30:])))
-                else:
+                # print(parsed_sensor_data)
+
+                if len(parsed_sensor_data) >= 3 and len(parsed_sensor_data) % 3 == 0:
+                    print("Leitura!")
+
+                if len(parsed_sensor_data) < 3:
                     print("WAIT")
+                elif 3 <= len(parsed_sensor_data) < 30 and len(parsed_sensor_data) % 3 == 0 and (not fail_a or not fail_b):
+                    glucose_blood_levels.append(convert_sensor_data_to_mmoll(statistics.mean(parsed_sensor_data)))
+                    glucose_variation.append(calculate_variation(parsed_sensor_data))
+                    # print(glucose_blood_levels)
+                    print("WAIT")
+                    decisions.append("WAIT")
+                elif len(parsed_sensor_data) >= 30 and len(parsed_sensor_data) % 3 == 0 and (not fail_a or not fail_b):
+                    glucose_blood_levels.append(convert_sensor_data_to_mmoll(statistics.mean(parsed_sensor_data[-30:])))
+                    glucose_variation.append(calculate_variation(parsed_sensor_data[-30:]))
+                    decisions.append(decide_insulin_injection(convert_sensor_data_to_mmoll(statistics.mean(parsed_sensor_data[-30:]))))
+                    print(decide_insulin_injection(convert_sensor_data_to_mmoll(statistics.mean(parsed_sensor_data[-30:]))))
+                    # print(glucose_blood_levels)
+                    print(decisions)
+
             # Debugging prints:
             # print(sensor_data)
             # print(parsed_sensor_data)
             # print(glucose_blood_levels)
         else:
             print("FAIL")
+
+        with open("decisions.txt", 'w') as file:
+            for item in decisions:
+                file.write("{}\n".format(item))
 
 
 # Converts the sensor data to readable mmol/l values, used to measure blood glucose levels
@@ -164,9 +186,9 @@ def calculate_insulin_level(d, last_ic):
 
 # Returns the variation using the last 3 readings
 def calculate_variation(values):
-    oldest = values[values.lenght - 3]
-    old = values[values.lenght - 2]
-    new = values[values.lenght - 1]
+    oldest = values[len(values) - 3]
+    old = values[len(values) - 2]
+    new = values[len(values) - 1]
 
     x = old - oldest
     y = new - old
@@ -185,11 +207,11 @@ def calculate_variation_of_variation(values):
 
 
 # Insulin should only be administered if the glucose blood levels are above the maximum and tending to rise
-def decide_insulin_injection(values):
-    if get_glucose_level(values) > max_glucose and glucose_rising:
-        return True
+def decide_insulin_injection(glucose_levels):
+    if glucose_levels > max_glucose and glucose_rising:
+        return 1
     else:
-        return False
+        return 0
 
 
 def main(args):
