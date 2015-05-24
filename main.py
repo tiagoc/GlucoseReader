@@ -16,8 +16,9 @@ def validate_input(reading):
     try:
         float(reading)
     except ValueError:
-            return False
+        return False
     return True
+
 
 # Reads and parses the input file with the sensor data
 def read_sensor_input(filename):
@@ -31,18 +32,18 @@ def read_sensor_input(filename):
             x, y = pair[0], pair[1]
             if validate_input(x) and validate_input(y):
                 parsed_sensor_data.append(statistics.mean([x, y]))
-            elif validate_input(x) and not(validate_input(y)):
+            elif validate_input(x) and not (validate_input(y)):
                 parsed_sensor_data.append(x)
-            elif validate_input(y) and not(validate_input(x)):
+            elif validate_input(y) and not (validate_input(x)):
                 parsed_sensor_data.append(y)
         # Debugging prints:
-        # print(sensor_data)
-        # print(parsed_sensor_data)
+        print(sensor_data)
+        print(parsed_sensor_data)
 
 
 # Converts the sensor data to readable mmol/l values, used to measure blood glucose levels
 def convert_sensor_data_to_mmoll(value):
-    g = -3.4 + 1.354 * value + 1.545 * math.tan(math.pow(1.0 / 3.0, value))
+    g = -3.4 + 1.354 * value + 1.545 * math.tan(math.pow(value, (1.0 / 4.0)))
     return g
 
 
@@ -62,9 +63,9 @@ def calculate_insulin_level(d, last_ic):
 
 # Returns the variation using the last 3 readings
 def calculate_variation(values):
-    oldest = values[values.lenght-3]
-    old = values[values.lenght-2]
-    new = values[values.lenght-1]
+    oldest = values[values.lenght - 3]
+    old = values[values.lenght - 2]
+    new = values[values.lenght - 1]
 
     x = old - oldest
     y = new - old
@@ -73,9 +74,9 @@ def calculate_variation(values):
 
 # Returns the variation of the variation of glucose blood levels using the last 3 values of dg
 def calculate_variation_of_variation(values):
-    oldest = values[values.lenght-3]
-    old = values[values.lenght-2]
-    new = values[values.lenght-1]
+    oldest = values[values.lenght - 3]
+    old = values[values.lenght - 2]
+    new = values[values.lenght - 1]
 
     x = old - oldest
     y = new - old
@@ -100,7 +101,9 @@ def main(args):
     try:
         input_data_file = args[0]
     except IndexError:
-        raise SystemExit('An input file is required.')
+        print("Please specify the input file. Trying to load the default sensor_data.txt...")
+        input_data_file = "sensor_data.txt"
+        print("Default file loaded.")
 
     read_sensor_input(input_data_file)
 
