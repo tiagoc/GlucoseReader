@@ -3,12 +3,28 @@
 __author__ = 'ei09044@fe.up.pt'
 
 
-# Variables
+# Variables ---------------------------------
 sensor_data = []
 parsed_sensor_data = []
+glucose_blood_levels = []           #g
+glucose_variation = []              #dg
+variation_glucose_variation = []    #ddg
+decisions = []
+
 max_glucose = 6.0
 min_glucose = 3.9
+max_variation = 2.0
+max_acceptable_reading = 5.0
+min_acceptable_reading = 1.0
+
 glucose_rising = False
+stuckat_a = False
+stuckat_b = False
+random_a = False
+random_b = False
+a_is_broken = False
+b_is_broken = False
+# -------------------------------------------
 
 
 # Returns True if the input is a float
@@ -33,9 +49,9 @@ def read_sensor_input(filename):
             if validate_input(x) and validate_input(y):
                 parsed_sensor_data.append(statistics.mean([x, y]))
             elif validate_input(x) and not (validate_input(y)):
-                parsed_sensor_data.append(x)
+                parsed_sensor_data.append(float(x))
             elif validate_input(y) and not (validate_input(x)):
-                parsed_sensor_data.append(y)
+                parsed_sensor_data.append(float(y))
         # Debugging prints:
         print(sensor_data)
         print(parsed_sensor_data)
