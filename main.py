@@ -1,5 +1,4 @@
 # coding=utf-8
-import numpy as np
 
 __author__ = 'ei09044@fe.up.pt'
 
@@ -12,19 +11,33 @@ min_glucose = 3.9
 glucose_rising = False
 
 
+# Returns True if the input is a float
+def validate_input(reading):
+    try:
+        float(reading)
+    except ValueError:
+            return False
+    return True
+
 # Reads and parses the input file with the sensor data
-# TODO: Make the parsing more robust, has to handle bad inputs and still go on
 def read_sensor_input(filename):
     with open(filename) as fileobject:
         for line in fileobject:
-            sensor_data.append([float(n) for n in line.strip().split(' ', 2)])
-        for pair in parsed_sensor_data:
             try:
-                x, y = pair[0], pair[1]
-                # TODO: check if x, y are valid? irrelevant because of previous check? do something else here?
-            except IndexError:
-                print("A line is missing entries.")
-        print(sensor_data)
+                sensor_data.append([float(n) for n in line.strip().split(' ', 2)])
+            except ValueError:
+                sensor_data.append([n for n in line.strip().split(' ', 2)])
+        for pair in sensor_data:
+            x, y = pair[0], pair[1]
+            if validate_input(x) and validate_input(y):
+                parsed_sensor_data.append(statistics.mean([x, y]))
+            elif validate_input(x) and not(validate_input(y)):
+                parsed_sensor_data.append(x)
+            elif validate_input(y) and not(validate_input(x)):
+                parsed_sensor_data.append(y)
+        # Debugging prints:
+        # print(sensor_data)
+        # print(parsed_sensor_data)
 
 
 # Converts the sensor data to readable mmol/l values, used to measure blood glucose levels
@@ -72,7 +85,7 @@ def calculate_variation_of_variation(values):
 # Calculates the mean glucose blood level value with the last 30 readings
 # TODO get the 30 values, account for errors
 def get_glucose_level(values):
-    return np.mean(values)
+    return statistics.mean(values)
 
 
 # Insulin should only be administered if the glucose blood levels are above the maximum and tending to rise
@@ -95,5 +108,6 @@ def main(args):
 if __name__ == '__main__':
     import sys
     import math
+    import statistics
 
     main(sys.argv[1:])  # Execute 'main' with all the command line arguments (excluding sys.argv[0], the program name).
