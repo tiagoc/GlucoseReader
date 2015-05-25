@@ -51,8 +51,8 @@ def parse_and_decide(filename):
         if fails < max_fails:
             for pair in sensor_data:
                 x, y = pair[0], pair[1]
-                print(x)
-                print(y)
+                # print(x)
+                # print(y)
 
                 fail_a = False
                 fail_b = False
