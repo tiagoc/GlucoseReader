@@ -173,11 +173,12 @@ def parse_and_decide(filename):
         with open("decisions.txt", 'w') as file:
             for item in decisions:
                 file.write("{}\n".format(item))
-                string_to_send.append("{}\n".format(item))
-
+                string_to_send.append(str(item)
+                                      )
+        string_to_send = "\n".join(string_to_send)
+        data_ = {"data": string_to_send}
         # print(string_to_send)
-        # requests.post('http://localhost:8080/scri', files={'decisions.txt': open('decisions.txt', 'rb')})
-        requests.post('http://localhost:8080/scri', string_to_send)
+        requests.post('http://localhost:8080/scri', data=data_)
 
 
 # Converts the sensor data to readable mmol/l values, used to measure blood glucose levels
