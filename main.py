@@ -14,6 +14,7 @@ decisions = []
 max_glucose = 6.0
 min_glucose = 3.9
 max_variation = 2.0
+last_ic = 0.0
 max_acceptable_reading = 5.0
 min_acceptable_reading = 1.0
 
@@ -38,6 +39,8 @@ def parse_and_decide(filename):
     fails = 0
     last_good_value_a = 0.0
     last_good_value_b = 0.0
+    global glucose_rising
+    global last_ic
 
     with open(filename) as fileobject:
         for line in fileobject:
@@ -68,7 +71,7 @@ def parse_and_decide(filename):
                     print("S1_FAILURE")
 
                 if not fail_a:
-                    if x < 1 or x > 5:
+                    if x < min_acceptable_reading or x > max_acceptable_reading:
                         fail_a = True
                         print("S1_OUT_OF_RANGE")
                     if x == last_input_a:
@@ -79,7 +82,7 @@ def parse_and_decide(filename):
                         print("S1_RANDOMVALUES")
 
                 if not fail_b:
-                    if y < 1 or y > 5:
+                    if y < min_acceptable_reading or y > max_acceptable_reading:
                         fail_b = True
                         print("S2_OUT_OF_RANGE")
 
@@ -118,18 +121,23 @@ def parse_and_decide(filename):
                     fails += 1
                 # -----------------------------------------------------
 
+                glucose_rising = False
+
                 if len(parsed_sensor_data) < 3:
                     print("WAIT")
                 elif 3 <= len(parsed_sensor_data) < 30 and len(parsed_sensor_data) % 3 == 0 and (not fail_a or not fail_b):
                     glucose_blood_levels.append(convert_sensor_data_to_mmoll(statistics.mean(parsed_sensor_data)))
                     glucose_variation.append(calculate_variation(parsed_sensor_data))
+                    if glucose_variation[-1] < -0.4:
+                        glucose_rising = True
                     # print(glucose_blood_levels)
                     print("WAIT")
                     decisions.append("WAIT")
                 elif len(parsed_sensor_data) >= 30 and len(parsed_sensor_data) % 3 == 0 and (not fail_a or not fail_b):
                     glucose_blood_levels.append(convert_sensor_data_to_mmoll(statistics.mean(parsed_sensor_data[-30:])))
                     glucose_variation.append(calculate_variation(parsed_sensor_data[-30:]))
-                    # if glucose_variation[-1]
+                    if glucose_variation[-1] < -0.4:
+                        glucose_rising = True
                     decisions.append(decide_insulin_injection(convert_sensor_data_to_mmoll(statistics.mean(parsed_sensor_data[-30:]))))
                     # print(decide_insulin_injection(convert_sensor_data_to_mmoll(statistics.mean(parsed_sensor_data[-30:]))))
 
