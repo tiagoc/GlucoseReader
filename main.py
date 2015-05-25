@@ -51,8 +51,8 @@ def parse_and_decide(filename):
         if fails < max_fails:
             for pair in sensor_data:
                 x, y = pair[0], pair[1]
-                # print(x)
-                # print(y)
+                print(x)
+                print(y)
 
                 fail_a = False
                 fail_b = False
@@ -69,9 +69,12 @@ def parse_and_decide(filename):
                     fail_a = True
                     fail_b = False
                     print("S1_FAILURE")
+                elif not validate_input(x) and not validate_input(y):
+                    fail_a = True
+                    fail_b = True
 
                 if not fail_a:
-                    if x < min_acceptable_reading or x > max_acceptable_reading:
+                    if float(x) < min_acceptable_reading or float(x) > max_acceptable_reading:
                         fail_a = True
                         print("S1_OUT_OF_RANGE")
                     if x == last_input_a:
@@ -82,7 +85,7 @@ def parse_and_decide(filename):
                         print("S1_RANDOMVALUES")
 
                 if not fail_b:
-                    if y < min_acceptable_reading or y > max_acceptable_reading:
+                    if float(y) < min_acceptable_reading or float(y) > max_acceptable_reading:
                         fail_b = True
                         print("S2_OUT_OF_RANGE")
 
@@ -165,11 +168,16 @@ def parse_and_decide(filename):
             print("FAIL")
             decisions.append("FAIL")
 
+        string_to_send = []
+
         with open("decisions.txt", 'w') as file:
             for item in decisions:
                 file.write("{}\n".format(item))
-                
-        requests.post('localhost:8080/scri', files={'decisions.txt': open('decisions.txt', 'rb')})
+                string_to_send.append("{}\n".format(item))
+
+        # print(string_to_send)
+        # requests.post('http://localhost:8080/scri', files={'decisions.txt': open('decisions.txt', 'rb')})
+        requests.post('http://localhost:8080/scri', string_to_send)
 
 
 # Converts the sensor data to readable mmol/l values, used to measure blood glucose levels
