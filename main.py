@@ -130,27 +130,26 @@ def parse_and_decide(filename):
                     print("WAIT")
                 elif 3 <= len(parsed_sensor_data) < 30 and len(parsed_sensor_data) % 3 == 0 and (not fail_a or not fail_b):
                     glucose_blood_levels.append(convert_sensor_data_to_mmoll(statistics.mean(parsed_sensor_data)))
-                    glucose_variation.append(calculate_variation(parsed_sensor_data))
-                    if len(glucose_variation) >= 3:
-                        variation_glucose_variation.append(calculate_variation_of_variation(glucose_variation))
-                    if glucose_variation[-1] < -0.4:
-                        glucose_rising = True
+                    if len(glucose_blood_levels) >= 3:
+                        dg = calculate_variation(glucose_blood_levels[-3:])
+                        glucose_variation.append(dg)
+                        if dg > -0.4:
+                            glucose_rising = True
                     # print(glucose_blood_levels)
                     print("WAIT")
                     decisions.append("WAIT")
                 elif len(parsed_sensor_data) >= 30 and len(parsed_sensor_data) % 3 == 0 and (not fail_a or not fail_b):
                     g = convert_sensor_data_to_mmoll(statistics.mean(parsed_sensor_data[-30:]))
                     glucose_blood_levels.append(g)
-                    dg = calculate_variation(parsed_sensor_data[-3:])
+                    dg = calculate_variation(glucose_blood_levels[-3:])
                     glucose_variation.append(dg)
                     ddg = calculate_variation_of_variation(glucose_variation[-3:])
                     variation_glucose_variation.append(ddg)
-
-                    if glucose_variation[-1] < -0.4:
+                    if dg > -0.4:
                         glucose_rising = True
                     if decide_insulin_injection(g):
                         dosage = round(calculate_insulin_dosage(g, dg, ddg, last_ic))
-                        if dosage == -1.0:
+                        if dosage < 0:
                             dosage = 0
                         decisions.append(dosage)
                         last_ic = calculate_insulin_level(dosage, last_ic)
@@ -173,8 +172,8 @@ def parse_and_decide(filename):
         with open("decisions.txt", 'w') as file:
             for item in decisions:
                 file.write("{}\n".format(item))
-                string_to_send.append(str(item)
-                                      )
+                string_to_send.append(str(item))
+
         string_to_send = "\n".join(string_to_send)
         data_ = {"data": string_to_send}
         # print(string_to_send)
@@ -196,16 +195,16 @@ def calculate_insulin_dosage(g, dg, ddg, ic):
 
 # Returns the current insulin level in the subject
 # calculate_insulin_level(dosage applied, previous insulin value):
-def calculate_insulin_level(d, last_ic):
-    ic = d + 0.9 * last_ic
+def calculate_insulin_level(d, prev_ic):
+    ic = d + 0.9 * prev_ic
     return ic
 
 
 # Returns the variation using the last 3 readings
 def calculate_variation(values):
-    oldest = values[len(values) - 3]
-    old = values[len(values) - 2]
-    new = values[len(values) - 1]
+    oldest = values[-3]
+    old = values[-2]
+    new = values[-1]
 
     x = old - oldest
     y = new - old
@@ -214,9 +213,9 @@ def calculate_variation(values):
 
 # Returns the variation of the variation of glucose blood levels using the last 3 values of dg
 def calculate_variation_of_variation(values):
-    oldest = values[len(values) - 3]
-    old = values[len(values) - 2]
-    new = values[len(values) - 1]
+    oldest = values[-3]
+    old = values[-2]
+    new = values[-1]
 
     x = old - oldest
     y = new - old
