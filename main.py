@@ -141,6 +141,8 @@ def parse_and_decide(filename):
             for item in decisions:
                 file.write("{}\n".format(item))
 
+        requests.post('localhost:8080/scri', files={'decisions.txt': open('decisions.txt', 'rb')})
+
 
 # Converts the sensor data to readable mmol/l values, used to measure blood glucose levels
 def convert_sensor_data_to_mmoll(value):
@@ -186,6 +188,7 @@ def calculate_variation_of_variation(values):
 
 # Insulin should only be administered if the glucose blood levels are above the maximum and tending to rise
 def decide_insulin_injection(glucose_levels):
+    print(glucose_levels)
     if glucose_levels > max_glucose and glucose_rising:
         return 1
     else:
@@ -207,5 +210,6 @@ if __name__ == '__main__':
     import sys
     import math
     import statistics
+    import requests
 
     main(sys.argv[1:])  # Execute 'main' with all the command line arguments (excluding sys.argv[0], the program name).
