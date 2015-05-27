@@ -54,24 +54,15 @@ def parse_and_decide(filename):
                 # print(x)
                 # print(y)
 
-                fail_a = False
-                fail_b = False
-
                 # Checks input errors
-                if validate_input(x) and validate_input(y):
-                    fail_a = False
-                    fail_b = False
-                elif validate_input(x) and not validate_input(y):
-                    fail_a = False
-                    fail_b = True
-                    print("S2_FAILURE")
-                elif not validate_input(x) and validate_input(y):
-                    fail_a = True
-                    fail_b = False
+                fail_a = not validate_input(x)
+                fail_b = not validate_input(y)
+
+                # Debugging prints for when the input is not a valid float (e.g.: "--")
+                if fail_a:
                     print("S1_FAILURE")
-                elif not validate_input(x) and not validate_input(y):
-                    fail_a = True
-                    fail_b = True
+                elif fail_b:
+                    print("S2_FAILURE")
 
                 if not fail_a:
                     if float(x) < min_acceptable_reading or float(x) > max_acceptable_reading:
